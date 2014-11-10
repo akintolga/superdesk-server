@@ -5,7 +5,7 @@ from superdesk import get_resource_service, SuperdeskError
 from flask import current_app as app
 from superdesk.emails import send_user_status_changed_email, send_activate_account_email
 from superdesk.utc import utcnow
-
+from eve.validation import ValidationError
 
 import logging
 
@@ -25,9 +25,7 @@ class UsersService(BaseService):
 
     def on_create(self, docs):
         for user_doc in docs:
-            is_active = user_doc.get('is_active', False)
             user_doc.setdefault('display_name', get_display_name(user_doc))
-            user_doc['needs_activation'] = not is_active
 
     def on_created(self, docs):
         for user_doc in docs:
@@ -84,7 +82,7 @@ class DBUsersService(UsersService):
         resetService = get_resource_service('reset_user_password')
         activate_ttl = app.config['ACTIVATE_ACCOUNT_TOKEN_TIME_TO_LIVE']
         for doc in docs:
-            if doc.get('needs_activation', False):
+            if self.user_is_waiting_activation(doc):
                 tokenDoc = {'user': doc['_id'], 'email': doc['email']}
                 id = resetService.store_reset_password_token(tokenDoc, doc['email'], activate_ttl, doc['_id'])
                 if not id:
@@ -110,14 +108,13 @@ class DBUsersService(UsersService):
         if not user:
             raise SuperdeskError(payload='Invalid user.')
 
-        if not self.user_is_active(user) and not self.user_is_waiting_activation(user):
+        if not self.user_is_active(user):
             raise SuperdeskError(status_code=403, message='Updating password is forbidden.')
 
         updates = {}
         updates['password'] = get_hash(password, app.config.get('BCRYPT_GENSALT_WORK_FACTOR', 12))
         updates[app.config['LAST_UPDATED']] = utcnow()
         if self.user_is_waiting_activation(user):
-            updates['is_active'] = True
             updates['needs_activation'] = False
 
         self.patch(user_id, updates=updates)
@@ -138,3 +135,19 @@ class ADUsersService(UsersService):
     def on_fetched_item(self, doc):
         super().update_user_defaults(doc)
         doc['_readonly'] = ADUsersService.readonly_fields
+
+
+class RolesService(BaseService):
+
+    def on_update(self, updates, original):
+        if updates.get('extends'):
+            if updates.get('extends') == original.get('_id'):
+                raise ValidationError('A role can not extend its self')
+            self.check_parents(original.get('_id'), updates.get('extends'))
+
+    def check_parents(self, myid, parentid):
+        parent = self.find_one(req=None, _id=parentid)
+        if parent:
+            if parent['_id'] == myid:
+                raise ValidationError('Circular role inheritance')
+            self.check_parents(myid, parent.get('extends'))
