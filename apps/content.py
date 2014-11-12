@@ -1,97 +1,145 @@
 from superdesk.resource import Resource
 
+
 metadata_schema = {
+    # Identifiers
     'guid': {
         'type': 'string',
         'unique': True
     },
-    'provider': {
-        'type': 'string'
+    'unique_id': {
+        'type': 'integer',
+        'unique': True
     },
-    'type': {
+    'unique_name': {
         'type': 'string',
-        'required': True,
-        'allowed': ['text', 'audio', 'video', 'picture', 'graphic', 'composite'],
-        'default': 'text'
+        'unique': True
     },
-    'mimetype': {
-        'type': 'string'
+    'parent_id': {
+        'type': 'string',
+        'unique': True
     },
     'version': {
-        'type': 'string'
+        'type': 'integer'
+    },
+
+    # Audit Information
+    'original_creator': Resource.rel('users', True),
+    'version_creator': Resource.rel('users', True),
+
+    'firstcreated': {
+        'type': 'datetime'
     },
     'versioncreated': {
         'type': 'datetime'
     },
-    'pubstatus': {
+
+    # Ingest Details
+    'ingest_provider': Resource.rel('ingest_providers', True),
+    'source': {     # The value is copied from the ingest_providers vocabulary
         'type': 'string'
     },
-    'copyrightholder': {
+    'original_source': {    # This value is extracted from the ingest
         'type': 'string'
     },
-    'copyrightnotice': {
+    'ingest_provider_sequence': {
         'type': 'string'
     },
+
+    # Copyright Information
     'usageterms': {
         'type': 'string'
     },
-    'language': {
+
+    # Category Details
+    'anpa-category': {
         'type': 'string'
-    },
-    'place': {
-        'type': 'list'
     },
     'subject': {
         'type': 'list'
     },
-    'byline': {
+    'genre': {
+        'type': 'list'
+    },
+
+    # Story Metadata
+    'type': {
+        'type': 'string',
+        'required': True,
+        'allowed': ['text', 'preformatted', 'audio', 'video', 'picture', 'graphic', 'composite'],
+        'default': 'text'
+    },
+    'language': {
+        'type': 'string',
+        'default': 'en'
+    },
+    'abstract': {
         'type': 'string'
     },
     'headline': {
         'type': 'string'
     },
-    'located': {
-        'type': 'string'
-    },
-    'renditions': {
-        'type': 'dict'
-    },
     'slugline': {
         'type': 'string'
     },
-    'creditline': {
+    'anpa_take_key': {
         'type': 'string'
     },
-    'description_text': {
-        'type': 'string',
-        'nullable': True
+    'keywords': {
+        'type': 'list'
     },
-    'firstcreated': {
-        'type': 'datetime'
+    'word_count': {
+        'type': 'integer'
     },
-    'filemeta': {
-        'type': 'dict'
-    },
-    'ingest_provider': {
+    'priority': {
         'type': 'string'
     },
     'urgency': {
         'type': 'integer'
     },
-    'groups': {
-        'type': 'list'
+    'pubstatus': {
+        'type': 'string',
+        'allowed': ['Usable', 'Withhold', 'Canceled'],
+        'default': 'Usable'
     },
-    'keywords': {
+    'signal': {
+        'type': 'string'
+    },
+    'byline': {
+        'type': 'string'
+    },
+    'ednote': {
+        'type': 'string'
+    },
+    'description': {
+        'type': 'string',
+        'nullable': True
+    },
+    'groups': {
         'type': 'list'
     },
     'body_html': {
         'type': 'string'
     },
-    'creator': {
-        'type': 'dict',
-        'schema': {
-            'user': Resource.rel('users', True)
-        }
+    'dateline': {
+        'type': 'string'
+    },
+    'is_spiked': {
+        'type': 'boolean'
+    },
+    'expiry': {
+        'type': 'datetime'
+    },
+
+    # Media Related
+    'mimetype': {
+        'type': 'string'
+    },
+    'renditions': {
+        'type': 'dict'
+    },
+    'filemeta': {
+        'type': 'dict'
     },
     'media_file': {
         'type': 'string'
@@ -99,27 +147,25 @@ metadata_schema = {
     'contents': {
         'type': 'list'
     },
-    'media': {
-        'type': 'media'
+
+    # Not Categorized
+    'place': {
+        'type': 'list'
     },
+    'located': {
+        'type': 'string'
+    },
+    'creditline': {
+        'type': 'string'
+    },
+
+    # Task and Lock Details
     'task_id': {
         'type': 'string'
     },
-    'lock_user': {
-        'type': 'objectid',
-        'data_relation': {'resource': 'users', 'field': '_id', 'embeddable': True}
-    },
+    'lock_user': Resource.rel('users', True),
     'lock_time': {
         'type': 'datetime'
     },
-    'lock_session': {
-        'type': 'objectid',
-        'data_relation': {'resource': 'auth', 'field': '_id', 'embeddable': True}
-    },
-    'is_spiked': {
-        'type': 'boolean'
-    },
-    'expiry': {
-        'type': 'datetime'
-    }
+    'lock_session': Resource.rel('auth', True),
 }

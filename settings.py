@@ -62,6 +62,10 @@ CELERYBEAT_SCHEDULE = {
     'auth_session_purge': {
         'task': 'apps.auth.session_purge',
         'schedule': timedelta(minutes=30)
+    },
+    'spike_purge': {
+        'task': 'apps.archive.spike_purge',
+        'schedule': timedelta(minutes=60)
     }
 }
 
@@ -94,7 +98,8 @@ INSTALLED_APPS = [
     'apps.groups',
     'apps.prepopulate',
     'apps.vocabularies',
-    'apps.legal_archive'
+    'apps.legal_archive',
+    'apps.search',
 ]
 
 RESOURCE_METHODS = ['GET', 'POST']
