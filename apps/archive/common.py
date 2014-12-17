@@ -32,7 +32,6 @@ GUID_NEWSML = 'newsml'
 ARCHIVE_MEDIA = 'archive_media'
 
 
-
 def on_create_item(docs):
     """Make sure item has basic fields populated."""
     for doc in docs:
@@ -74,7 +73,7 @@ def generate_guid(**hints):
 def get_user(required=False):
     user = flask.g.get('user', {})
     if '_id' not in user and required:
-        raise SuperdeskError(payload='Invalid user.')
+        raise SuperdeskApiError.notFoundError(payload='Invalid user.')
     return user
 
 

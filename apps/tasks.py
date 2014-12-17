@@ -13,7 +13,7 @@ from eve.utils import ParsedRequest
 from eve.versioning import resolve_document_version
 from apps.archive.common import insert_into_versions, is_assigned_to_a_desk
 from superdesk.resource import Resource
-from superdesk import InvalidStateTransitionError, SuperdeskError
+from superdesk.errors import InvalidStateTransitionError
 from superdesk.notification import push_notification
 from superdesk.utc import utcnow
 from apps.archive.common import on_create_item, item_url

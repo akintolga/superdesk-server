@@ -209,4 +209,8 @@ Feature: Stages
 	    """
 
         When we delete "/stages/#STAGES_ID#"
+<<<<<<< HEAD
         Then we get response code 400
+=======
+        Then we get response code 403
+>>>>>>> [SD-1297] Refactoring API (HTTP) errors
