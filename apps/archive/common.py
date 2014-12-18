@@ -25,7 +25,7 @@ from superdesk.notification import push_notification
 from superdesk.workflow import set_default_state, is_workflow_state_transition_valid
 import superdesk
 from apps.archive.archive import SOURCE as ARCHIVE
-from superdesk.errors import SuperdeskError, IdentifierGenerationError
+from superdesk.errors import SuperdeskApiError, IdentifierGenerationError
 
 GUID_TAG = 'tag'
 GUID_NEWSML = 'newsml'
