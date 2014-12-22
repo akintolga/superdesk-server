@@ -5,6 +5,7 @@ from superdesk.io.iptc import subject_codes
 from superdesk.errors import ParserError
 from superdesk.utc import utc
 
+
 class NewsMLOneParser(Parser):
     """NewsMl xml 1.2 parser"""
 
