@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 import json
 import superdesk
 from eve.utils import ParsedRequest
@@ -124,4 +122,3 @@ class ContentViewItemsService(BaseService):
         for doc in docs:
             build_custom_hateoas(self.custom_hateoas, doc, location=location)
         return docs
->>>>>>> [SD-1297] Refactoring API (HTTP) errors
