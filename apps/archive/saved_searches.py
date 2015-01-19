@@ -54,7 +54,7 @@ class SavedSearchesService(BaseService):
             if repo.find(',') >= 0:
                 repo = repo.split(',').pop(0)
 
-            self.validate_and_run_elastic_query(query, repo)
+            self.validate_elastic_query(query)
 
     def get(self, req, lookup):
         """
@@ -95,7 +95,7 @@ class SavedSearchesService(BaseService):
         return self.get_location(doc), build_elastic_query(
             {k: v for k, v in doc['filter']['query'].items() if k != 'repo'})
 
-    def validate_and_run_elastic_query(self, elastic_query, index):
+    def validate_elastic_query(self, elastic_query):
         """
         Validates the elastic_query against ElasticSearch.
 
@@ -103,13 +103,11 @@ class SavedSearchesService(BaseService):
         :param index: Name of the ElasticSearch index
         :raise SuperdeskError: If failed to validate the elastic_query against ElasticSearch
         """
-
         parsed_request = self.init_request(elastic_query)
-        try:
-            return get_resource_service(index).get(req=parsed_request, lookup={})
-        except Exception as e:
-            logger.exception(e)
-            raise SuperdeskApiError.badRequestError('Fail to validate the filter against %s.' % index)
+        validation_result = get_resource_service('search').validate_query(req=parsed_request)
+        if not validation_result['valid']:
+            logger.exception(validation_result.explanations)
+            raise SuperdeskApiError.badRequestError('Fail to validate search %s.' % json.dumps(elastic_query))
 
 
 class SavedSearchItemsResource(Resource):
@@ -137,4 +135,20 @@ class SavedSearchItemsService(SavedSearchesService):
             raise SuperdeskApiError.notFoundError("Invalid Saved Search")
 
         repo, query = super().process_query(saved_search)
-        return super().validate_and_run_elastic_query(query, repo)
+        return self.run_elastic_query(query, repo)
+
+    def run_elastic_query(self, elastic_query, index):
+        """
+        Executes the elastic_query against ElasticSearch.
+
+        :param elastic_query: JSON format inline with ElasticSearch syntax
+        :param index: Name of the ElasticSearch index
+        :raise SuperdeskError: If failed to validate the elastic_query against ElasticSearch
+        """
+
+        parsed_request = super().init_request(elastic_query)
+        try:
+            return get_resource_service(index).get(req=parsed_request, lookup={})
+        except Exception as e:
+            logger.exception(e)
+            raise SuperdeskApiError.badRequestError('Fail to execute the saved search %s.' % elastic_query)

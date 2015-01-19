@@ -12,6 +12,7 @@
 from superdesk.tests import TestCase
 from eve.utils import ParsedRequest
 from . import init_app
+from apps.search import SearchService
 
 
 def resource_listener(resource, docs):
@@ -60,3 +61,10 @@ class SearchServiceTestCase(TestCase):
             self.app.data.insert('archive', [{'task': {'desk': None}}, {'task': {}}])
             cursor = self.app.data.find('search', None, None)
             self.assertEquals(2, cursor.count())
+
+    def test_if_validates_query(self):
+        with self.app.app_context():
+            req = {'filtered': {'filter': {'and': [{'not': {'term': {'state': 'spiked'}}}]},
+                                'query': {'query_string': {'lenient': False, 'default_operator': 'AND', 'query': '*'}}}}
+            validation_result = SearchService().validate_query(req=req)
+            self.assertTrue(validation_result['valid'])

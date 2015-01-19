@@ -12,8 +12,7 @@
 import superdesk
 from flask import current_app as app, json
 from apps.archive.common import aggregations
-from apps.archive.common import aggregations
-from eve_elastic.elastic import set_filters
+from eve_elastic.elastic import set_filters, get_indices
 
 
 class SearchService(superdesk.Service):
@@ -63,6 +62,22 @@ class SearchService(superdesk.Service):
             getattr(app, 'on_fetched_resource')(resource, response)
             getattr(app, 'on_fetched_resource_%s' % resource)(response)
         return docs
+
+    def validate_query(self, req):
+        """Validates elastic search without running it"""
+        elastic = app.data.elastic
+        query = self._get_query(req)
+        types = self._get_types(req)
+
+        params = {}
+        params['explain'] = True
+
+        validation_query = {}
+        validation_query['query'] = query['query']
+        return get_indices(elastic.es).validate_query(body=validation_query,
+                                                      index=elastic.index,
+                                                      doc_type=types,
+                                                      params=params)
 
 
 class SearchResource(superdesk.Resource):
